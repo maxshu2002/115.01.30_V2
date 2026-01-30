@@ -1,0 +1,683 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<!-- 預覽連結顯示設定（LINE / FB / Discord / IG 等） -->
+<meta property="og:title" content="甲佣試算一覽表" />
+<meta property="og:description" content="製作者：徐杰　v115.01.30x（修正版）（修正版）<br>
+甲佣比率請以最新公告之公文為主<br>
+（本網頁僅供參考）x（修正版）　甲佣比率請以最新公告之公文為主（本網頁僅供參考）" />
+<meta property="og:image" content="https://jj-post.github.io/insurance-commission_V2/icon-512.png" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://jj-post.github.io/insurance-commission_V2/" />
+<meta name="twitter:card" content="summary_large_image" />
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>甲佣一覽表（卡片版）— 修正版</title>
+<style>
+:root{ --bg:#0b1220; --panel:#0b1326; --line:rgba(255,255,255,.08); --muted:#94a3b8; }
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:#e2e8f0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Noto Sans TC,Helvetica,Arial,sans-serif}
+.container{max-width:960px;margin:0 auto;padding:14px;}
+h1{font-weight:800;margin:6px 0 2px}
+.muted{color:var(--muted)}
+.group{border:1px solid var(--line);border-radius:14px;margin:10px 0;background:var(--panel)}
+.group-header{display:flex;gap:10px;align-items:center;padding:12px 14px;cursor:pointer}
+.group-header .chev{margin-right:2px}
+.group-title{font-weight:700}
+.group-sub{font-size:12px;color:var(--muted);margin-left:8px}
+.count-toggle{margin-left:auto;cursor:pointer;color:var(--muted)}
+.hide{display:none}
+.sublist{padding:8px 0;border-top:1px solid var(--line)}
+.subitem{display:block;width:100%;text-align:left;padding:10px 14px;background:none;border:none;color:#e2e8f0;font-size:15px}
+.subitem:active{opacity:.85}
+.card{margin:8px 12px 14px;border:1px solid var(--line);border-radius:14px;background:#0b1326;padding:14px;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.badge{padding:2px 8px;border:1px solid rgba(255,215,0,.5);border-radius:999px;font-size:12px;color:#facc15}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+input.num{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#0a1428;color:#e2e8f0;font-size:16px}
+.footer-note{text-align:center;color:var(--muted);font-size:12px;margin-top:10px}
+.pos{color:#22c55e !important;}
+.badge{white-space:nowrap;}
+</style>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b1220">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+</head>
+<body>
+<div class="container">
+  <h1>甲佣試算一覽表</h1>
+  <div class="muted" style="font-size:12px;opacity:.85;margin-top:2px;">
+    製作者：徐杰　v115.01.30x（修正版）（修正版）<br>
+甲佣比率請以最新公告之公文為主<br>
+（本網頁僅供參考）
+  </div>
+  
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px;">
+    <div id="counterBox" class="muted" style="font-size:12px;">
+      👁️ 累計瀏覽：<span id="visitTotal">—</span><span id="visitUpdatedWrap" style="display:none;">（更新：<span id="visitUpdated">—</span>）</span>
+    </div>
+    <button id="btnAdmin" style="border:1px solid var(--line);background:var(--panel);color:#e2e8f0;border-radius:10px;padding:6px 12px;cursor:pointer">管理</button>
+  </div>
+<div id="app"></div>
+  <div class="footer-note">卡片版・每次開啟皆初始化（不清空設定）・可加入主畫面離線使用　⚠️ 僅供內部同仁參考使用</div>
+</div>
+
+<script>
+const GROUPS = [
+  { key:'守護小額終身', sub:'W20 / W21 / W22 / W23', items:[
+      {name:'守護小額終身 W20（6年期）', monthly:0, rate:'4.2%'},
+      {name:'守護小額終身 W21（10年期）', monthly:0, rate:'8.8%'},
+      {name:'守護小額終身 W22（15年期）', monthly:0, rate:'12.8%'},
+      {name:'守護小額終身 W23（20年期）', monthly:0, rate:'16.8%'},
+  ]},
+  { key:'金滿溢', sub:'E13 / E14', items:[
+      {name:'金滿溢 E13（2年期/保額10-29萬）', monthly:0, rate:'0.50%', payout:[0.5, 0.5]},
+      {name:'金滿溢 E13（2年期/保額30-50萬）', monthly:0, rate:'1.88%', payout:[0.5, 0.5]},
+      {name:'金滿溢 E14（6年期/保額10-29萬）', monthly:0, rate:'0.58%', payout:[0.5, 0.3, 0.2]},
+      {name:'金滿溢 E14（6年期/保額30-50萬）', monthly:0, rate:'2.00%', payout:[0.5, 0.3, 0.2]},
+  ]},
+  { key:'年年常春', sub:'I26 / I27', items:[
+      {name:'年年常春 I26（6年期/保額10-29萬）', monthly:0, rate:'2.08%'},
+      {name:'年年常春 I26（6年期/保額30-49萬）', monthly:0, rate:'2.18%'},
+      {name:'年年常春 I26（6年期/保額50萬以上）', monthly:0, rate:'2.38%'},
+      {name:'年年常春 I27（10年期/保額10-29萬）', monthly:0, rate:'3.78%'},
+      {name:'年年常春 I27（10年期/保額30-49萬）', monthly:0, rate:'3.88%'},
+      {name:'年年常春 I27（10年期/保額50萬以上）', monthly:0, rate:'4.08%'},
+  ]},
+  { key:'好吉利', sub:'E12（8年期）', items:[
+      {name:'好吉利 E12（8年期/保額10-29萬）', monthly:0, rate:'2.5%'},
+      {name:'好吉利 E12（8年期/保額30-49萬）', monthly:0, rate:'2.8%'},
+      {name:'好吉利 E12（8年期/保額50萬以上）', monthly:0, rate:'3.0%'},
+  ]},
+  { key:'珍愛 015', sub:'E10 / E11', items:[
+      {name:'珍愛 015 E10（6年期/保額10-29萬）', monthly:0, rate:'1.68%'},
+      {name:'珍愛 015 E10（6年期/保額30-49萬）', monthly:0, rate:'1.88%'},
+      {name:'珍愛 015 E10（6年期/保額50萬以上）', monthly:0, rate:'2.28%'},
+      {name:'珍愛 015 E11（10年期/保額10-29萬）', monthly:0, rate:'3.28%'},
+      {name:'珍愛 015 E11（10年期/保額30-49萬）', monthly:0, rate:'3.58%'},
+      {name:'珍愛 015 E11（10年期/保額50萬以上）', monthly:0, rate:'3.98%'},
+  ]},
+  { key:'常鴻增額', sub:'I24 / I25', items:[
+      {name:'常鴻增額 I24（6年期/保額10-29萬）', monthly:0, rate:'2.28%'},
+      {name:'常鴻增額 I24（6年期/保額30-49萬）', monthly:0, rate:'2.38%'},
+      {name:'常鴻增額 I24（6年期/保額50萬以上）', monthly:0, rate:'2.68%'},
+      {name:'常鴻增額 I25（10年期/保額10-29萬）', monthly:0, rate:'4.08%'},
+      {name:'常鴻增額 I25（10年期/保額30-49萬）', monthly:0, rate:'4.38%'},
+      {name:'常鴻增額 I25（10年期/保額50萬以上）', monthly:0, rate:'4.58%'},
+  ]},
+];
+
+function parseRate(r){
+  if(!r) return 0;
+  r = (''+r).replace(/,/g,'').trim();
+  if(r.endsWith('%')) return parseFloat(r)/100;
+  const v = parseFloat(r);
+  if (isNaN(v)) return 0;
+  return v>1 ? v/100 : v;
+}
+function fmt(n){ if(!isFinite(n)) return '0'; return Math.round(n).toString(); }
+function fmtMoney(n){ try{ return Math.round(n).toLocaleString('zh-Hant-TW') + ' 元'; }catch(e){ return fmt(n) + ' 元'; } }
+
+const app = document.getElementById('app');
+function buildCard({name, rate, payout}){
+  const rows = payout.map((p,i)=>{
+    const nth = i+1;
+    const percent = Math.round(p*100);
+    return `<div class="muted" style="font-size:13px;">第${nth}年 (${percent}%)</div><div class="pos" id="y${nth}" style="text-align:right;font-weight:700;">0</div>`;
+  }).join('');
+  const totalRow = `<div class="muted" style="font-size:13px;">合計</div><div id="total" style="text-align:right;font-weight:800;font-size:18px;" class="pos">0</div>`;
+
+  const host = document.createElement('div');
+  host.className = 'card';
+  host.innerHTML = `
+    <div style="font-weight:700;margin-bottom:8px;display:flex;gap:8px;align-items:center;justify-content:space-between;">
+      <div><span class="badge">甲佣試算</span> <span>${name}</span></div>
+      <button class="close-card" style="background:none;border:1px solid rgba(255,255,255,.15);color:#e2e8f0;border-radius:8px;padding:4px 8px;font-size:12px;">收起</button>
+    </div>
+    <div class="row" style="gap:12px;margin-bottom:6px;">
+      <div class="muted">甲佣比率</div><div style="font-weight:600;">${(rate*100).toFixed(2).replace(/\.00$/,'')}%</div>
+    </div>
+    <div style="margin-top:6px;">
+      <label class="muted" style="font-size:13px;display:block;margin-bottom:4px;">輸入保費（月繳）</label>
+      <input class="num" id="monthly" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="請輸入月保費">
+    </div>
+    <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      ${rows}
+      ${totalRow}
+    </div>
+  `;
+  const inp = host.querySelector('#monthly');
+  const total = host.querySelector('#total');
+  const yCells = payout.map((_,i)=>host.querySelector('#y'+(i+1)));
+  function recalc(){
+    const m = parseFloat((inp.value||'0').replace(/,/g,''))||0;
+    const base = m * 12 * rate;
+    let sum = 0;
+    payout.forEach((p,i)=>{
+      const v = base * p;
+      sum += v;
+      if(yCells[i]) yCells[i].textContent = fmtMoney(v);
+    });
+    total.textContent = fmtMoney(sum);
+  }
+  inp.addEventListener('input', function(ev){
+    const raw = (inp.value||'').replace(/,/g,'').replace(/[^\d.]/g,'');
+    inp.value = raw;
+    queueMicrotask(()=>{
+      const n = raw ? Math.round(parseFloat(raw)) : 0;
+      inp.value = n ? n.toLocaleString('zh-Hant-TW') : '';
+      recalc();
+    });
+  });
+  host.addEventListener('click', function(e){
+    if(e.target && e.target.classList.contains('close-card')){
+      host.remove();
+    }
+  });
+  recalc();
+  return host;
+}
+
+// ====== Admin storage keys ======
+const DEFAULT_ADMIN_PWD = 'admin123';
+const PWD_KEY = 'adminPwd_v114_10_20';
+const CFG_KEY = 'customProducts_v114_10_20'; // per-device overrides
+const COUNTER_URL_KEY = 'counterURL_v114_10_20';
+const CFG_VERSION_KEY = 'customProductsVersion_v114_10_20';
+const REMOTE_CFG_URL_KEY = 'remoteCfgURL_v114_10_20';
+
+function getPwd(){ return localStorage.getItem(PWD_KEY) || DEFAULT_ADMIN_PWD; }
+function setPwd(p){ localStorage.setItem(PWD_KEY, p); }
+
+function loadCustom(){
+  try{ return JSON.parse(localStorage.getItem(CFG_KEY) || '{"groups":[]}'); }
+  catch(e){ return {groups:[]}; }
+}
+function saveCustom(cfg){ localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); }
+
+// Merge default GROUPS with custom overrides
+function mergeGroups(defaults, custom){
+  const byKey = new Map(defaults.map(g=>[g.key, JSON.parse(JSON.stringify(g))]));
+  (custom.groups||[]).forEach(cg=>{
+    if(!byKey.has(cg.key)){
+      byKey.set(cg.key, {key:cg.key, sub: cg.sub||'', items: []});
+    }
+    const base = byKey.get(cg.key);
+    const dict = new Map((base.items||[]).map(i=>[i.name, i]));
+    (cg.items||[]).forEach(ci=>{
+      const ex = dict.get(ci.name) || {name:ci.name, monthly:0, rate:'0%', payout:'0.5,0.3,0.2', enabled:true};
+      dict.set(ci.name, {...ex, ...ci});
+    });
+    base.items = Array.from(dict.values());
+  });
+  byKey.forEach(g=>{ g.items.forEach(i=>{ if(i.enabled===undefined) i.enabled = true; }); });
+  return Array.from(byKey.values());
+}
+
+// ===== Front render (uses merged + enabled filter) =====
+function render(){
+  const cfg = loadCustom();
+  const merged = mergeGroups(GROUPS, cfg);
+  app.innerHTML = '';
+  merged.forEach(group => {
+    const wrap = document.createElement('div');
+    wrap.className = 'group';
+    const header = document.createElement('div');
+    header.className = 'group-header';
+    const sub = group.sub ? `<span class="group-sub">${group.sub}</span>` : '';
+    const itemsEnabled = (group.items||[]).filter(i=>i.enabled!==false);
+    // 新增：若無可用商品，前台不顯示此群組
+    if(itemsEnabled.length === 0){ return; }
+    header.innerHTML = `<span class="chev">▸</span><span class="group-title">${group.key}</span>${sub}<span class="count-toggle">${itemsEnabled.length} 筆 ▾</span>`;
+    wrap.appendChild(header);
+
+    const sublist = document.createElement('div');
+    sublist.className = 'sublist hide';
+    sublist.innerHTML = itemsEnabled.map(it => {
+      const short = it.name.replace(group.key,'').trim();
+      return `<button class="subitem" data-name="${it.name}" data-rate="${it.rate||''}" data-payout="${(it.payout||'0.5,0.3,0.2')}"><span style="color:var(--muted)">&emsp;${group.key}</span> ${short}</button>`;
+    }).join('');
+    wrap.appendChild(sublist);
+
+    const cardHost = document.createElement('div');
+    wrap.appendChild(cardHost);
+
+    header.addEventListener('click', ()=>{ sublist.classList.toggle('hide'); });
+    header.querySelector('.count-toggle').addEventListener('click', (ev)=>{ ev.stopPropagation(); sublist.classList.toggle('hide'); });
+
+    sublist.querySelectorAll('.subitem').forEach(btn=>{
+      btn.addEventListener('click', (ev)=>{
+        ev.stopPropagation();
+        const name = btn.getAttribute('data-name');
+        const rateText = btn.getAttribute('data-rate');
+        const rate = parseRate(rateText);
+        const payout = (btn.getAttribute('data-payout') || '0.5,0.3,0.2').split(',').map(parseFloat);
+        const card = buildCard({name, rate, payout});
+        cardHost.innerHTML = '';
+        cardHost.appendChild(card);
+        if(sublist.classList.contains('hide')){ sublist.classList.remove('hide'); }
+      });
+    });
+    app.appendChild(wrap);
+  });
+}
+render();
+</script>
+
+<script>
+// Register SW (unchanged)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('./service-worker.js', {scope: './'}).catch(()=>{});
+  });
+}
+</script>
+
+<style>
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;place-items:center;z-index:9999}
+.modal{width:min(920px,96vw);max-height:90vh;overflow:auto;background:#0b1326;border:1px solid var(--line);border-radius:16px;padding:14px}
+.modal h2{margin:6px 0 8px}
+.table{width:100%;border-collapse:collapse}
+.table th,.table td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;font-size:14px}
+.table input[type="text"], .table input[type="number"]{width:100%;padding:8px;border-radius:8px;border:1px solid var(--line);background:#0a1428;color:#e2e8f0}
+.small{font-size:12px;color:var(--muted)}
+.tabbar{display:flex;gap:8px;margin:8px 0 12px}
+.tabbar button{padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:#0a1428;color:#e2e8f0;cursor:pointer}
+.tabbar button.active{outline:2px solid #334155}
+.badge{border:1px solid var(--line);padding:2px 6px;border-radius:999px;font-size:12px}
+.modal .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+hr.hr{border:0;border-top:1px solid var(--line);margin:10px 0}
+</style>
+<div id="modalAdmin" class="modal-backdrop">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h2>管理後台</h2>
+      <button id="adminClose" style="border:1px solid var(--line);background:#0a1428;color:#e2e8f0;border-radius:10px;padding:6px 10px;cursor:pointer">關閉</button>
+    </div>
+    <div class="tabbar">
+      <button data-tab="products" class="active">商品管理</button>
+      <button data-tab="password">密碼設定</button>
+      <button data-tab="settings">設定</button>
+    </div>
+    <div id="adminGate" style="display:none;margin:8px 0 12px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#0a1428">
+      <div class="small" style="margin-bottom:6px">請輸入管理密碼以進入後台</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="gatePwd" type="password" placeholder="管理密碼" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--line);background:#0b1326;color:#e2e8f0">
+        <button id="gateLogin" style="padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:#0b1326;color:#e2e8f0;cursor:pointer">登入</button>
+      </div>
+    </div>
+    <div id="tab-products">
+      <div class="small">可調整比率、停用商品，或新增商品（僅影響本裝置；重新整理後仍保留）。</div>
+      <table class="table" id="adminTable">
+        <thead><tr><th>群組</th><th>商品名稱</th><th>比率</th><th>發放</th><th>啟用</th><th>操作</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="actions">
+        <button id="btnAddRow">新增一列</button>
+        <button id="btnSave">儲存</button>
+      </div>
+    </div>
+    <div id="tab-password" style="display:none">
+      <div class="small">預設密碼：<code>admin123</code>（不顯示在頁面，僅此處提示）。</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+        <input id="oldPwd" type="password" placeholder="舊密碼">
+        <input id="newPwd" type="password" placeholder="新密碼">
+      </div>
+      <div class="actions"><button id="btnChangePwd">修改密碼</button></div>
+    </div>
+    <div id="tab-settings" style="display:none">
+      <div class="small">遠端瀏覽統計 API（例如 Google Apps Script 部署網址）。</div>
+      <input id="counterUrl" type="text" placeholder="https://script.google.com/macros/s/XXXX/exec" />
+      <div class="small" style="margin-top:6px">說明：每次開啟頁面會送出 <code>POST {"op":"hit"}</code>，預期回傳 <code>{ "total": 123, "updatedAt": "2025-10-20T21:00:00+08:00" }</code>。若無 <code>updatedAt</code> 會顯示本機時間。</div>
+      <div class="actions"><button id="btnSaveSettings">儲存設定</button></div>
+      <hr class="hr">
+      <div class="small">遠端設定同步 API（可用 Google Apps Script 或任一簡易後端）。</div>
+      <input id="remoteCfgUrl" type="text" placeholder="https://script.google.com/macros/s/XXXX/exec" />
+      <div class="small" style="margin-top:6px">
+        規格：
+        <ul style="margin:6px 0 0 18px; padding:0;">
+          <li>推送：<code>POST {"op":"save","version":&lt;number&gt;,"cfg":&lt;object&gt;}</code> 回傳 <code>{ "ok": true }</code></li>
+          <li>拉取：<code>GET ?op=get</code> 回傳 <code>{ "version": &lt;number&gt;, "cfg": &lt;object&gt; }</code></li>
+        </ul>
+        若未設定此欄位，則維持本機（單機）設定，不影響原功能。
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+// ====== Simple tab/show helpers ======
+function showTab(id){
+  document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('active', b.dataset.tab===id));
+  document.querySelectorAll('[id^="tab-"]').forEach(el=>el.style.display = (el.id === 'tab-'+id ? '' : 'none'));
+}
+function openAdmin(){
+  const modal = document.getElementById('modalAdmin');
+  const gate = document.getElementById('adminGate');
+  const tabs = document.querySelector('.tabbar');
+  const products = document.getElementById('tab-products');
+  const password = document.getElementById('tab-password');
+  const settings = document.getElementById('tab-settings');
+  if(!window.__adminAuthed){
+    gate.style.display = '';
+    tabs.style.display = 'none';
+    products.style.display = 'none';
+    password.style.display = 'none';
+    settings.style.display = 'none';
+  }else{
+    gate.style.display = 'none';
+    tabs.style.display = '';
+    products.style.display = '';
+    password.style.display = 'none';
+    settings.style.display = 'none';
+    showTab('products');
+  }
+  buildAdminRows();
+  modal.style.display = 'grid';
+}
+function closeAdmin(){
+  const modal = document.getElementById('modalAdmin');
+  modal.style.display = 'none';
+  // FIX #3: reset session so reopening requires password (and new pwd is enforced)
+  window.__adminAuthed = false;
+}
+document.getElementById('btnAdmin').addEventListener('click', openAdmin);
+document.getElementById('adminClose').addEventListener('click', closeAdmin);
+document.getElementById('modalAdmin').addEventListener('click', function(e){ if(e.target.id==='modalAdmin') closeAdmin(); });
+document.addEventListener('keydown', function(e){ if(e.key==='Escape' && document.getElementById('modalAdmin').style.display!=='none') closeAdmin(); });
+
+document.querySelectorAll('.tabbar button').forEach(b=>{
+  b.addEventListener('click', ()=> showTab(b.dataset.tab));
+});
+
+// ===== Admin login =====
+document.getElementById('gateLogin').addEventListener('click', ()=>{
+  const v = (document.getElementById('gatePwd').value||'').trim();
+  if(v !== getPwd()){ alert('密碼錯誤'); return; }
+  window.__adminAuthed = true;
+  document.getElementById('adminGate').style.display = 'none';
+  document.querySelector('.tabbar').style.display = '';
+  showTab('products');
+  document.getElementById('tab-products').style.display = '';
+  document.getElementById('tab-password').style.display = 'none';
+  document.getElementById('tab-settings').style.display = 'none';
+});
+
+// ===== Admin table build / read / save =====
+function toPayoutString(p){ if(!p) return ''; if(Array.isArray(p)) return p.join(','); if(typeof p==='string') return p; return ''; }
+function mergedGroupsForAdmin(){
+  const defaults = GROUPS;
+  let custom = {groups:[]};
+  try{ custom = JSON.parse(localStorage.getItem(CFG_KEY)||'{"groups":[]}'); }catch(e){}
+  const map = new Map();
+  defaults.forEach(g=>{
+    const clone = { key: g.key, sub: g.sub || '', items: [] };
+    (g.items||[]).forEach(it=>{
+      clone.items.push({ name: it.name||'', rate: it.rate||'', payout: toPayoutString(it.payout), enabled: (it.enabled!==false) });
+    });
+    map.set(g.key, clone);
+  });
+  (custom.groups||[]).forEach(cg=>{
+    let base = map.get(cg.key);
+    if(!base){ base = { key: cg.key, sub: '', items: [] }; map.set(cg.key, base); }
+    const dict = new Map((base.items||[]).map(i=>[i.name, i]));
+    (cg.items||[]).forEach(ci=>{
+      const ex = dict.get(ci.name) || { name: ci.name||'', rate:'', payout:'', enabled:true };
+      dict.set(ci.name, {
+        name: ci.name || ex.name,
+        rate: (ci.rate!==undefined && ci.rate!==null && ci.rate!=='') ? ci.rate : ex.rate,
+        payout: (ci.payout!==undefined && ci.payout!==null && ci.payout!=='') ? (Array.isArray(ci.payout)?ci.payout.join(','):ci.payout) : ex.payout,
+        enabled: (typeof ci.enabled==='boolean') ? ci.enabled : ex.enabled
+      });
+    });
+    base.items = Array.from(dict.values());
+  });
+  return Array.from(map.values());
+}
+function buildAdminRows(){
+  const tbody = document.querySelector('#adminTable tbody');
+  if(!tbody) return;
+  tbody.innerHTML = '';
+  const groups = mergedGroupsForAdmin();
+  groups.forEach(g=>{
+    (g.items||[]).forEach(it=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="text" value="${g.key||''}" class="adm-group"></td>
+        <td><input type="text" value="${it.name||''}" class="adm-name"></td>
+        <td><input type="text" value="${it.rate||''}" class="adm-rate" placeholder="8.8% 或 0.088"></td>
+        <td><input type="text" value="${toPayoutString(it.payout)||''}" class="adm-payout" placeholder="0.5,0.3,0.2"></td>
+        <td><input type="checkbox" class="adm-enabled" ${it.enabled!==false?'checked':''}></td>
+        <td><button class="adm-del">刪除</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  });
+}
+function readAdminRows(){
+  const rows = Array.from(document.querySelectorAll('#adminTable tbody tr'));
+  const tmp = {};
+  rows.forEach(r=>{
+    const key = (r.querySelector('.adm-group')?.value || '未分類').trim();
+    const name = (r.querySelector('.adm-name')?.value || '').trim();
+    if(!name) return;
+    const rate = (r.querySelector('.adm-rate')?.value || '').trim();
+    const payout = (r.querySelector('.adm-payout')?.value || '').trim();
+    let enabled = !!(r.querySelector('.adm-enabled')?.checked);
+    if(r.dataset.deleted === '1'){ enabled = false; }
+    (tmp[key] = tmp[key] || []).push({name, rate, payout, enabled});
+  });
+  return {groups: Object.entries(tmp).map(([key, items])=>({key, items}))};
+}
+
+document.getElementById('btnAddRow').addEventListener('click', ()=>{
+  const tb = document.querySelector('#adminTable tbody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = '<td><input class="adm-group" type="text" placeholder="群組"></td><td><input class="adm-name" type="text" placeholder="商品名稱"></td><td><input class="adm-rate" type="text" placeholder="8.8%"></td><td><input class="adm-payout" type="text" placeholder="0.5,0.3,0.2"></td><td><input class="adm-enabled" type="checkbox" checked></td><td><button class="adm-del">刪除</button></td>';
+  tb.appendChild(tr);
+});
+
+document.addEventListener('click', function(e){
+  const t = e.target;
+  if(t && t.classList && t.classList.contains('adm-del')){
+    e.preventDefault();
+    const tr = t.closest('tr'); if(!tr) return;
+    tr.dataset.deleted = '1';
+    tr.style.opacity = '0.5';
+    const en = tr.querySelector('.adm-enabled');
+    if(en) en.checked = false;
+    const nameInput = tr.querySelector('.adm-name');
+    if(nameInput){ nameInput.style.textDecoration = 'line-through'; }
+    t.textContent = '已刪除';
+    t.disabled = true;
+  }
+}, true);
+
+document.getElementById('btnSave').addEventListener('click', ()=>{
+  const cfg = readAdminRows();
+  saveCustom(cfg);
+  alert('已儲存。重新整理以套用。');
+  render(); // 立即套用到前台（不必等重整）
+  // 對所有裝置推送
+  syncPush();
+});
+
+// ===== Password change (enforce re-login with new password) =====
+document.getElementById('btnChangePwd').addEventListener('click', ()=>{
+  const oldPwd = (document.getElementById('oldPwd').value||'').trim();
+  const newPwd = (document.getElementById('newPwd').value||'').trim();
+  if(oldPwd !== getPwd()){ alert('舊密碼錯誤'); return; }
+  if(newPwd.length < 4){ alert('新密碼至少 4 碼'); return; }
+  setPwd(newPwd);
+  // FIX #3: force logout so reopening admin requires the new password
+  window.__adminAuthed = false;
+  alert('密碼已更新，請以新密碼重新登入後台。');
+  closeAdmin();
+});
+
+
+// ===== Settings: remote cfg sync URL =====
+(function(){
+  const urlInput = document.getElementById('remoteCfgUrl');
+  if(urlInput){ urlInput.value = localStorage.getItem(REMOTE_CFG_URL_KEY) || ''; }
+  const saveBtn = document.getElementById('btnSaveSettings');
+  if(saveBtn){
+    saveBtn.addEventListener('click', ()=>{
+      const remote = (document.getElementById('remoteCfgUrl').value||'').trim();
+      if(remote && !/^https?:\/\//.test(remote)){ alert('請輸入有效的遠端設定 URL'); return; }
+      if(remote){ localStorage.setItem(REMOTE_CFG_URL_KEY, remote); }
+      else{ localStorage.removeItem(REMOTE_CFG_URL_KEY); }
+      alert('已儲存遠端設定 URL');
+      // 立即嘗試拉取一次（若有設定）
+      syncPull().catch(()=>{});
+    });
+  }
+})();
+
+// ===== Remote sync helpers (multi-device) =====
+async function syncPush(){
+  const url = localStorage.getItem(REMOTE_CFG_URL_KEY);
+  if(!url) return;
+  const cfg = loadCustom();
+  const version = Date.now(); // 單調遞增版本
+  localStorage.setItem(CFG_VERSION_KEY, String(version));
+  try{
+    await fetch(url, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({op:'save', version, cfg})
+    });
+  }catch(e){
+    console.warn('syncPush failed', e);
+  }
+}
+async function syncPull(){
+  const url = localStorage.getItem(REMOTE_CFG_URL_KEY);
+  if(!url) return;
+  try{
+    const resp = await fetch(url + (url.includes('?') ? '&' : '?') + 'op=get', { cache: 'no-store' });
+    if(!resp.ok) return;
+    const data = await resp.json().catch(()=>null);
+    if(!data || typeof data.version==='undefined' || !data.cfg) return;
+    const localVer = +(localStorage.getItem(CFG_VERSION_KEY) || 0);
+    if(data.version > localVer){
+      saveCustom(data.cfg);
+      localStorage.setItem(CFG_VERSION_KEY, String(data.version));
+      render();
+    }
+  }catch(e){
+    console.warn('syncPull failed', e);
+  }
+}
+// 啟動時與聚焦時自動拉取；每 60 秒輪詢一次
+window.addEventListener('load', ()=>{ syncPull().catch(()=>{}); });
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState === 'visible'){ syncPull().catch(()=>{}); } });
+setInterval(()=>{ syncPull().catch(()=>{}); }, 60000);
+
+// ===== Settings: counter API =====
+(function(){
+  const urlInput = document.getElementById('counterUrl');
+  if(urlInput){ urlInput.value = localStorage.getItem(COUNTER_URL_KEY) || ''; }
+  document.getElementById('btnSaveSettings').addEventListener('click', ()=>{
+    const url = (document.getElementById('counterUrl').value||'').trim();
+    if(!/^https?:\/\//.test(url)){ alert('請輸入有效的 URL'); return; }
+    localStorage.setItem(COUNTER_URL_KEY, url);
+    alert('已儲存 API 位址');
+    updateCounter();
+  });
+})();
+
+// ===== Counter: POST {op:'hit'} then render ======
+async function updateCounter(){
+  const url = localStorage.getItem(COUNTER_URL_KEY);
+  const totalEl = document.getElementById('visitTotal');
+  const updWrap = document.getElementById('visitUpdatedWrap');
+  const updEl = document.getElementById('visitUpdated');
+  if(!url){ totalEl.textContent = '未設定'; return; }
+  try{
+    const resp = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({op:'hit'}) });
+    const data = await resp.json().catch(()=>({}));
+    const total = (data && typeof data.total!=='undefined') ? data.total : null;
+    if(total===null){ totalEl.textContent = '—'; } else { totalEl.textContent = String(total); }
+    let upd = data && data.updatedAt;
+    if(!upd){ upd = new Date().toISOString(); }
+    const dt = new Date(upd);
+    const fmt = (n)=> String(n).padStart(2,'0');
+    const local = `${dt.getFullYear()}-${fmt(dt.getMonth()+1)}-${fmt(dt.getDate())} ${fmt(dt.getHours())}:${fmt(dt.getMinutes())}`;
+    updEl.textContent = local;
+    updWrap.style.display = '';
+  }catch(e){
+    totalEl.textContent = '連線失敗';
+  }
+}
+updateCounter();
+</script>
+
+
+<!-- Live Sync (Long-Poll) - inserted by helper -->
+<script>
+// ==== Remote Live Sync (long-poll) ====
+let __liveAbort = null;
+
+function stopLiveSync() {
+  try { if (__liveAbort) { __liveAbort.abort(); } } catch(e) {}
+  __liveAbort = null;
+}
+
+async function startLiveSync() {
+  try {
+    const url = localStorage.getItem(typeof REMOTE_CFG_URL_KEY !== 'undefined' ? REMOTE_CFG_URL_KEY : 'remoteCfgURL_v114_10_20');
+    if (!url) return;
+
+    stopLiveSync();
+    let latest = +(localStorage.getItem(typeof CFG_VERSION_KEY !== 'undefined' ? CFG_VERSION_KEY : 'customProductsVersion_v114_10_20') || 0);
+
+    while (true) {
+      try {
+        __liveAbort = new AbortController();
+        const waitUrl = url + (url.includes('?') ? '&' : '?') + 'op=wait&since=' + latest;
+        const resp = await fetch(waitUrl, { signal: __liveAbort.signal, cache: 'no-store' });
+        if (!resp.ok) throw new Error('wait failed');
+        const data = await resp.json().catch(()=>null);
+        if (data && typeof data.version === 'number' && data.version > latest) {
+          latest = data.version;
+          localStorage.setItem(typeof CFG_VERSION_KEY !== 'undefined' ? CFG_VERSION_KEY : 'customProductsVersion_v114_10_20', String(latest));
+          if (typeof syncPull === 'function') {
+            await syncPull(); // 拉取並重新 render()
+          }
+        }
+        // 立刻進下一輪長輪詢
+      } catch (err) {
+        // 連線失敗/中斷，3 秒後重試
+        await new Promise(r => setTimeout(r, 3000));
+      }
+    }
+  } catch(e) {
+    // 若發生不可預期錯誤，避免整頁崩潰
+    console.warn('startLiveSync error', e);
+  }
+}
+
+// ---- 事件掛載：頁面載入與「儲存設定」後，確保 Live Sync 啟動 ----
+window.addEventListener('load', function(){
+  try { if (typeof startLiveSync === 'function') startLiveSync(); } catch(e){}
+});
+
+// 後台「儲存設定」按鈕（id=btnSaveSettings）點擊後，重啟 Live Sync
+document.addEventListener('DOMContentLoaded', function(){
+  try {
+    var btn = document.getElementById('btnSaveSettings');
+    if (btn) {
+      btn.addEventListener('click', function(){
+        try { if (typeof stopLiveSync === 'function') stopLiveSync(); } catch(e){}
+        try { if (typeof startLiveSync === 'function') startLiveSync(); } catch(e){}
+      });
+    }
+  } catch(e){}
+});
+</script>
+
+</body>
+</html>
